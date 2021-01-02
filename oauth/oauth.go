@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/a-soliman/bookstore_oauth-go/oauth/errors"
+	"github.com/a-soliman/bookstore_utils-go/rest_errors"
 	"github.com/federicoleon/golang-restclient/rest"
 )
 
@@ -70,7 +70,7 @@ func GetCallerID(request *http.Request) int64 {
 }
 
 // AuthenticateRequest authenticates a given request, after clearing it from X headers, then appending clientId and the callerId headers
-func AuthenticateRequest(request *http.Request) *errors.RestErr {
+func AuthenticateRequest(request *http.Request) *rest_errors.RestErr {
 	if request == nil {
 		return nil
 	}
@@ -104,16 +104,16 @@ func cleanRequest(request *http.Request) {
 	request.Header.Del(headerXCallerID)
 }
 
-func getAccessToken(accessTokenID string) (*accessToken, *errors.RestErr) {
+func getAccessToken(accessTokenID string) (*accessToken, *rest_errors.RestErr) {
 	response := oauthRestClient.Get(fmt.Sprintf("/oauth/access_token/%s", accessTokenID))
 	if response == nil || response.Response == nil {
-		return nil, errors.NewInternalServerError("invalid restclient response while trying to get access token")
+		return nil, rest_errors.NewInternalServerError("invalid restclient response while trying to get access token", nil)
 	}
 
 	if response.StatusCode > 299 {
-		var restErr errors.RestErr
+		var restErr rest_errors.RestErr
 		if err := json.Unmarshal(response.Bytes(), &restErr); err != nil {
-			return nil, errors.NewInternalServerError("invalid error interface while trying to get access token")
+			return nil, rest_errors.NewInternalServerError("invalid error interface while trying to get access token", nil)
 		}
 		return nil, &restErr
 	}
@@ -121,7 +121,7 @@ func getAccessToken(accessTokenID string) (*accessToken, *errors.RestErr) {
 	var at accessToken
 
 	if err := json.Unmarshal(response.Bytes(), &at); err != nil {
-		return nil, errors.NewInternalServerError("error while trying to unmarshal users response to get access token")
+		return nil, rest_errors.NewInternalServerError("error while trying to unmarshal users response to get access token", nil)
 	}
 	return &at, nil
 }
