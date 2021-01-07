@@ -70,7 +70,7 @@ func GetCallerID(request *http.Request) int64 {
 }
 
 // AuthenticateRequest authenticates a given request, after clearing it from X headers, then appending clientId and the callerId headers
-func AuthenticateRequest(request *http.Request) *rest_errors.RestErr {
+func AuthenticateRequest(request *http.Request) rest_errors.RestErr {
 	if request == nil {
 		return nil
 	}
@@ -84,7 +84,7 @@ func AuthenticateRequest(request *http.Request) *rest_errors.RestErr {
 
 	at, err := getAccessToken(accessTokenID)
 	if err != nil {
-		if err.Status == http.StatusNotFound { // the 404 should not be treated as an authentication error
+		if err.Status() == http.StatusNotFound { // the 404 should not be treated as an authentication error
 			return nil
 		}
 		return err
@@ -104,7 +104,7 @@ func cleanRequest(request *http.Request) {
 	request.Header.Del(headerXCallerID)
 }
 
-func getAccessToken(accessTokenID string) (*accessToken, *rest_errors.RestErr) {
+func getAccessToken(accessTokenID string) (*accessToken, rest_errors.RestErr) {
 	response := oauthRestClient.Get(fmt.Sprintf("/oauth/access_token/%s", accessTokenID))
 	if response == nil || response.Response == nil {
 		return nil, rest_errors.NewInternalServerError("invalid restclient response while trying to get access token", nil)
@@ -115,7 +115,7 @@ func getAccessToken(accessTokenID string) (*accessToken, *rest_errors.RestErr) {
 		if err := json.Unmarshal(response.Bytes(), &restErr); err != nil {
 			return nil, rest_errors.NewInternalServerError("invalid error interface while trying to get access token", nil)
 		}
-		return nil, &restErr
+		return nil, restErr
 	}
 
 	var at accessToken
