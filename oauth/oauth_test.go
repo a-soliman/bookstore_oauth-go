@@ -67,3 +67,29 @@ func TestGetClientIDValid(t *testing.T) {
 
 	assert.EqualValues(t, clientIDToSet, clientID)
 }
+
+func TestGetCallerIDNilReq(t *testing.T) {
+	callerID := GetCallerID(nil)
+
+	assert.EqualValues(t, 0, callerID)
+}
+
+func TestGetCallerIDInvalid(t *testing.T) {
+	req, _ := http.NewRequest(http.MethodGet, "/testing", nil)
+	req.Header.Add(headerXCallerID, "not an integer")
+
+	callerID := GetCallerID(nil)
+
+	assert.EqualValues(t, 0, callerID)
+}
+
+func TestGetCallerIDValid(t *testing.T) {
+	callerIDToTest := 1
+
+	req, _ := http.NewRequest(http.MethodGet, "/testing", nil)
+	req.Header.Add(headerXCallerID, strconv.Itoa(callerIDToTest))
+
+	callerID := GetCallerID(req)
+
+	assert.EqualValues(t, callerIDToTest, callerID)
+}
