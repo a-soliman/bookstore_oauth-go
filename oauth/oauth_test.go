@@ -93,3 +93,94 @@ func TestGetCallerIDValid(t *testing.T) {
 
 	assert.EqualValues(t, callerIDToTest, callerID)
 }
+
+func TestGetAccessTokenInvalidRestclientResponse(t *testing.T) {
+	rest.FlushMockups()
+	rest.AddMockups(&rest.Mock{
+		HTTPMethod:   http.MethodGet,
+		URL:          "http://localhost:8080/oauth/access_token/Abc123",
+		ReqBody:      ``,
+		RespHTTPCode: -1,
+		RespBody:     `{}`,
+	})
+
+	accessToken, err := getAccessToken("Abc123")
+
+	assert.Nil(t, accessToken)
+	assert.NotNil(t, err)
+	assert.EqualValues(t, "invalid restclient response while trying to get access token", err.Message())
+	assert.EqualValues(t, http.StatusInternalServerError, err.Status())
+}
+
+func TestGetAccessTokenInvalidErrorInterface(t *testing.T) {
+	rest.FlushMockups()
+	rest.AddMockups(&rest.Mock{
+		HTTPMethod:   http.MethodGet,
+		URL:          "http://localhost:8080/oauth/access_token/Abc123",
+		ReqBody:      ``,
+		RespHTTPCode: 404,
+		RespBody:     `{"message": "error returned", "status": "404", "error": "test_error", "causes": ["some"]}`,
+	})
+
+	accessToken, err := getAccessToken("Abc123")
+
+	assert.Nil(t, accessToken)
+	assert.NotNil(t, err)
+	assert.EqualValues(t, "invalid error interface when trying to get access token", err.Message())
+	assert.EqualValues(t, 500, err.Status())
+}
+
+func TestGetAccessTokenErrorReturned(t *testing.T) {
+	rest.FlushMockups()
+	rest.AddMockups(&rest.Mock{
+		HTTPMethod:   http.MethodGet,
+		URL:          "http://localhost:8080/oauth/access_token/Abc123",
+		ReqBody:      ``,
+		RespHTTPCode: 404,
+		RespBody:     `{"message": "error returned", "status": 404, "error": "test_error", "causes": ["some"]}`,
+	})
+
+	accessToken, err := getAccessToken("Abc123")
+
+	assert.Nil(t, accessToken)
+	assert.NotNil(t, err)
+	assert.EqualValues(t, "error returned", err.Message())
+	assert.EqualValues(t, 404, err.Status())
+}
+
+func TestGetAccessTokenBadAccessTokenJSON(t *testing.T) {
+	rest.FlushMockups()
+	rest.AddMockups(&rest.Mock{
+		HTTPMethod:   http.MethodGet,
+		URL:          "http://localhost:8080/oauth/access_token/Abc123",
+		ReqBody:      ``,
+		RespHTTPCode: 200,
+		RespBody:     `{"id": "someAccesstokenID", "user_id": "1", "client_id": 1}`,
+	})
+
+	accessToken, err := getAccessToken("Abc123")
+
+	assert.Nil(t, accessToken)
+	assert.NotNil(t, err)
+	assert.EqualValues(t, "error while trying to unmarshal users response to get access token", err.Message())
+	assert.EqualValues(t, 500, err.Status())
+}
+
+func TestGetAccessTokenNoError(t *testing.T) {
+	rest.FlushMockups()
+	rest.AddMockups(&rest.Mock{
+		HTTPMethod:   http.MethodGet,
+		URL:          "http://localhost:8080/oauth/access_token/Abc123",
+		ReqBody:      ``,
+		RespHTTPCode: 200,
+		RespBody:     `{"id": "someAccesstokenID", "user_id": 1, "client_id": 1}`,
+	})
+
+	accessToken, err := getAccessToken("Abc123")
+
+	assert.Nil(t, err)
+	assert.NotNil(t, accessToken)
+	assert.EqualValues(t, "someAccesstokenID", accessToken.ID)
+	assert.EqualValues(t, 1, accessToken.UserID)
+	assert.EqualValues(t, 1, accessToken.ClientID)
+}
