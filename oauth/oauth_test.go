@@ -3,6 +3,7 @@ package oauth
 import (
 	"net/http"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/federicoleon/golang-restclient/rest"
@@ -39,4 +40,30 @@ func TestIsPublicFalse(t *testing.T) {
 	isPublic := IsPublic(req)
 
 	assert.False(t, isPublic)
+}
+
+func TestGetClientIDNilReq(t *testing.T) {
+	clientID := GetClientID(nil)
+
+	assert.EqualValues(t, 0, clientID)
+}
+
+func TestGetClientIDInvalidID(t *testing.T) {
+	req, _ := http.NewRequest(http.MethodGet, "/testing", nil)
+	req.Header.Add(headerXClientID, "not an integer")
+
+	clientID := GetClientID(req)
+
+	assert.EqualValues(t, 0, clientID)
+}
+
+func TestGetClientIDValid(t *testing.T) {
+	clientIDToSet := 1
+
+	req, _ := http.NewRequest(http.MethodGet, "/testing", nil)
+	req.Header.Add(headerXClientID, strconv.Itoa(clientIDToSet))
+
+	clientID := GetClientID(req)
+
+	assert.EqualValues(t, clientIDToSet, clientID)
 }
