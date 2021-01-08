@@ -184,3 +184,68 @@ func TestGetAccessTokenNoError(t *testing.T) {
 	assert.EqualValues(t, 1, accessToken.UserID)
 	assert.EqualValues(t, 1, accessToken.ClientID)
 }
+
+func TestAuthenticateRequestNilReq(t *testing.T) {
+	err := AuthenticateRequest(nil)
+	assert.Nil(t, err)
+}
+
+func TestAuthenticateRequestNoAccessTokenParam(t *testing.T) {
+	req, _ := http.NewRequest(http.MethodGet, "/testing", nil)
+	err := AuthenticateRequest(req)
+	assert.Nil(t, err)
+}
+
+func TestAuthenticateRequestNotFound(t *testing.T) {
+	rest.FlushMockups()
+	rest.AddMockups(&rest.Mock{
+		HTTPMethod:   http.MethodGet,
+		URL:          "http://localhost:8080/oauth/access_token/Abc123",
+		ReqBody:      ``,
+		RespHTTPCode: 404,
+		RespBody:     `{"message": "not found", "status": 404, "error": "not_found"}`,
+	})
+
+	req, _ := http.NewRequest(http.MethodGet, "/testing", nil)
+	q := req.URL.Query()
+	q.Add(paramAccessToken, "Abc123")
+	req.URL.RawQuery = q.Encode()
+	err := AuthenticateRequest(req)
+	assert.Nil(t, err)
+}
+
+func TestAuthenticateRequestError(t *testing.T) {
+	rest.FlushMockups()
+	rest.AddMockups(&rest.Mock{
+		HTTPMethod:   http.MethodGet,
+		URL:          "http://localhost:8080/oauth/access_token/Abc123",
+		ReqBody:      ``,
+		RespHTTPCode: -1,
+		RespBody:     `{}`,
+	})
+
+	req, _ := http.NewRequest(http.MethodGet, "/testing", nil)
+	q := req.URL.Query()
+	q.Add(paramAccessToken, "Abc123")
+	req.URL.RawQuery = q.Encode()
+	err := AuthenticateRequest(req)
+	assert.NotNil(t, err)
+}
+
+func TestAuthenticateRequestNoError(t *testing.T) {
+	rest.FlushMockups()
+	rest.AddMockups(&rest.Mock{
+		HTTPMethod:   http.MethodGet,
+		URL:          "http://localhost:8080/oauth/access_token/Abc123",
+		ReqBody:      ``,
+		RespHTTPCode: 200,
+		RespBody:     `{"id": "someAccesstokenID", "user_id": 1, "client_id": 1}`,
+	})
+
+	req, _ := http.NewRequest(http.MethodGet, "/testing", nil)
+	q := req.URL.Query()
+	q.Add(paramAccessToken, "Abc123")
+	req.URL.RawQuery = q.Encode()
+	err := AuthenticateRequest(req)
+	assert.Nil(t, err)
+}
