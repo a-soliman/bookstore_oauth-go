@@ -2,6 +2,7 @@ package oauth
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -107,7 +108,7 @@ func cleanRequest(request *http.Request) {
 func getAccessToken(accessTokenID string) (*accessToken, rest_errors.RestErr) {
 	response := oauthRestClient.Get(fmt.Sprintf("/oauth/access_token/%s", accessTokenID))
 	if response == nil || response.Response == nil {
-		return nil, rest_errors.NewInternalServerError("invalid restclient response while trying to get access token", nil)
+		return nil, rest_errors.NewInternalServerError("invalid restclient response while trying to get access token", errors.New("network timeout"))
 	}
 
 	if response.StatusCode > 299 {
@@ -121,7 +122,7 @@ func getAccessToken(accessTokenID string) (*accessToken, rest_errors.RestErr) {
 	var at accessToken
 
 	if err := json.Unmarshal(response.Bytes(), &at); err != nil {
-		return nil, rest_errors.NewInternalServerError("error while trying to unmarshal users response to get access token", nil)
+		return nil, rest_errors.NewInternalServerError("error while trying to unmarshal users response to get access token", errors.New("error processing json"))
 	}
 	return &at, nil
 }

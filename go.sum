@@ -3,6 +3,8 @@ github.com/a-soliman/bookstore_utils-go v0.0.0-20210107175045-ad09a0b3cfad h1:+P
 github.com/a-soliman/bookstore_utils-go v0.0.0-20210107175045-ad09a0b3cfad/go.mod h1:vJBICx4XBJ1NA6p9EBdy7Ogwqlyrhfo8abf0hRS929g=
 github.com/a-soliman/bookstore_utils-go v0.0.0-20210107212128-9798edf05b8a h1:wzI4VN1CEsJl0FQcTxLZQ6cAb+NJbTPKDyIP3HWwxw8=
 github.com/a-soliman/bookstore_utils-go v0.0.0-20210107212128-9798edf05b8a/go.mod h1:vJBICx4XBJ1NA6p9EBdy7Ogwqlyrhfo8abf0hRS929g=
+github.com/a-soliman/bookstore_utils-go v0.0.0-20210107230621-b1e6aeb90a92 h1:Dc8UCAoR9Xml4kLmgMmCs6XOgXuLAErEPGmjXR9CH1A=
+github.com/a-soliman/bookstore_utils-go v0.0.0-20210107230621-b1e6aeb90a92/go.mod h1:vJBICx4XBJ1NA6p9EBdy7Ogwqlyrhfo8abf0hRS929g=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
