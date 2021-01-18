@@ -4,16 +4,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/a-soliman/bookstore_utils-go/rest_errors"
 	"github.com/federicoleon/golang-restclient/rest"
+	"github.com/joho/godotenv"
 )
 
 const (
+	oauthServiceURL = "OAUTH_MICROSERVICE_URL"
 	headerXPublic   = "X-Public"
 	headerXClientID = "X-Client-Id"
 	headerXCallerID = "X-Caller-Id"
@@ -22,8 +26,9 @@ const (
 )
 
 var (
+	baseURL         = goDotEnvVariable(oauthServiceURL)
 	oauthRestClient = rest.RequestBuilder{
-		BaseURL: "http://localhost:8080",
+		BaseURL: baseURL,
 		Timeout: 2 * time.Second,
 	}
 )
@@ -125,4 +130,16 @@ func getAccessToken(accessTokenID string) (*accessToken, rest_errors.RestErr) {
 		return nil, rest_errors.NewInternalServerError("error while trying to unmarshal users response to get access token", errors.New("error processing json"))
 	}
 	return &at, nil
+}
+
+func goDotEnvVariable(key string) string {
+
+	// load .env file
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
+	return os.Getenv(key)
 }
